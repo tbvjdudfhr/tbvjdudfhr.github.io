@@ -52,10 +52,6 @@ spring:
 - delete시 aud테이블에서 타겟 테이블의 pk만 쌓을뿐 다른 필드의 값은 기본적으로 null입니다.
 - null이 아니라 delete 직전의 모든 필드의 값을 쌇고 싶다면 true로 설정합니다.
 
-:::note 주의사항
-Property 수정 시 테이블의 이름, 컬럼을 수정해야합니다. 기본값을 사용하는 것을 권장합니다.
-:::
-
 4. CustomRevisionEntity
 ```kotlin
 @Entity
@@ -70,9 +66,10 @@ class CustomRevisionEntity : Serializable {
     private val timestamp: Long = 0
 }
 ```
+
 - revinfo의 pk인 rev컬럼은 기본적으로 int로 되어있습니다.
 - 데이터가 20억개 이상 넘어가면 오류가 발생하므로 rev를 long으로 변경합니다.
 
-:::note 참고 사이트
-Hibernate envers 공식 사이트 : [https://hibernate.org/orm/envers/](https://hibernate.org/orm/envers/)  
-:::
+## 참고 사이트
+- Hibernate envers 공식 사이트 : [https://hibernate.org/orm/envers/](https://hibernate.org/orm/envers/)  
+
