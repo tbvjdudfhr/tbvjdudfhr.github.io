@@ -27,13 +27,20 @@ implementation("org.hibernate:hibernate-envers")
 ```kotlin
 @Entity
 @Audited
-@Table(name = "demo_table")
-data class DemoEntity()
+@Table(name = "user")
+data class User()
 ```
-- demo_table_aud, revinfo 테이블이 생성됩니다.
+![auditErd](../assets/images/data-history/audit_1.png)
+- user_table_aud, revinfo 테이블이 생성됩니다.
 - revinfo는 central revision table입니다.
-- @Audited(withModifiedFlag = true)로 설정하면 aud 테이블마다 수정상태 컴럼이 추가됩니다.
-- ex) name -> name_mod
+- revtype은 생성, 수정, 삭제를 구분하는 컬럼입니다.
+
+  |revtype|구분|
+  |---|---|
+  |0|추가|
+  |1|수정|
+  |2|삭제|
+
 3. Propety Config
 ```yaml
 spring:
@@ -66,9 +73,60 @@ class CustomRevisionEntity : Serializable {
     private val timestamp: Long = 0
 }
 ```
-
 - revinfo의 pk인 rev컬럼은 기본적으로 int로 되어있습니다.
 - 데이터가 20억개 이상 넘어가면 오류가 발생하므로 rev를 long으로 변경합니다.
+
+## 기능
+1. 필드 변경 여부 관리
+
+```kotlin
+@Entity
+@Audited(withModifiedFlag = true)
+@Table(name = "users")
+data class Users()
+```
+![auditErd](../assets/images/data-history/audit_2.png)
+
+- @Audited(withModifiedFlag = true) 추가합니다.
+- AUD 테이블에 필드마다 수정 상태 컬럼 추가됩니다.
+- ex) NAME → NAME_MOD
+- 어떤 필드를 수정했는지 알 수 있습니다.
+- 필드의 수정여부를 검색조건으로 사용 가능합니다.
+
+2. 변경된 엔티티 관리
+- property 추가
+```yaml
+org:
+  hibernate:
+    envers:
+      track_entities_changed_in_revision: true
+```
+- customRevisionEntity 생성한 경우 modifiedEntityNames 추가해야 합니다.
+```kotlin
+@Entity
+@RevisionEntity
+data class Revinfo (
+    @Id
+    @GeneratedValue
+    @RevisionNumber
+    val rev: Long = 0,
+
+    @RevisionTimestamp
+    var timestamp: Long = 0,
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Column(name = "ENTITYNAME")
+    @ModifiedEntityNames
+    val modifiedEntityNames: Set<String>? = null
+)
+```
+![auditErd](../assets/images/data-history/audit_3.png)
+- 같은 트랜잭션에서 함께 변경된 엔티티를 저장합니다.
+
+  |rev|entityname|
+  |---|---|
+  |1|spring.envers.entity.User|
+
 
 ## 참고 사이트
 - Hibernate envers 공식 사이트 : [https://hibernate.org/orm/envers/](https://hibernate.org/orm/envers/)  
