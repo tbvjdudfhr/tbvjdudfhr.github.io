@@ -30,16 +30,18 @@ implementation("org.hibernate:hibernate-envers")
 @Table(name = "user")
 data class User()
 ```
+
 ![auditErd](../assets/images/data-history/audit_1.png)
+
 - user_table_aud, revinfo 테이블이 생성됩니다.
 - revinfo는 central revision table입니다.
 - revtype은 생성, 수정, 삭제를 구분하는 컬럼입니다.
-
-  |revtype|구분|
-  |---|---|
-  |0|추가|
-  |1|수정|
-  |2|삭제|
+    
+    |revtype|구분|
+    |---|---|
+    |0|추가|
+    |1|수정|
+    |2|삭제|
 
 3. Propety Config
 ```yaml
@@ -102,6 +104,7 @@ org:
       track_entities_changed_in_revision: true
 ```
 - customRevisionEntity 생성한 경우 modifiedEntityNames 추가해야 합니다.
+
 ```kotlin
 @Entity
 @RevisionEntity
@@ -120,12 +123,13 @@ data class Revinfo (
     val modifiedEntityNames: Set<String>? = null
 )
 ```
+
 ![auditErd](../assets/images/data-history/audit_3.png)
 - 같은 트랜잭션에서 함께 변경된 엔티티를 저장합니다.
 
-  |rev|entityname|
-  |---|---|
-  |1|spring.envers.entity.User|
+    |rev|entityname|
+    |---|---|
+    |1|spring.envers.entity.User|
 
 
 ## 참고 사이트
