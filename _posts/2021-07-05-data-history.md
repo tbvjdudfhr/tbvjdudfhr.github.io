@@ -130,6 +130,34 @@ data class Revinfo (
     |---|---|
     |1|spring.envers.entity.User|
 
+## 예외 사항
+- 네이티브 쿼리나 데이터를 대용량 처리시에는 데이터의 이력이 남지 않습니다.
+- 직접 RevInfo와 Aud 테이블에 데이터를 저장해야 합니다.
+
+1. RevInfo
+```kotlin
+class RevinfoService(
+    private val revinfoRepos: RevinfoRepository,
+    private val auditService: AuditService
+) {
+    //rev 
+    val newRev = revinfoRepos.findMaxRev() + 1
+    //현재 시간 timestamp
+    val now = auditService.localDateTimeToLong(LocalDateTime.now())
+
+    revinfoRepos.save(Revinfo(newRev, now))
+}
+    
+```
+2. NativeQuery
+```kotlin
+val sql =
+    """
+        insert into $auditTableName (rev, revtype, ${columnNames.joinToString(",")})
+        values (${rev}, ${getRevtype(revtype)} ${(", ?").repeat(columnNames.size)})
+    """.trimIndent()
+val query = em.createNativeQuery(sql)
+```
 
 ## 참고 사이트
 - Hibernate envers 공식 사이트 : [https://hibernate.org/orm/envers/](https://hibernate.org/orm/envers/)  
